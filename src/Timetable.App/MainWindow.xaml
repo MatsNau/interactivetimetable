@@ -1,12 +1,297 @@
-﻿<Window x:Class="Timetable.App.MainWindow"
+<Window x:Class="Timetable.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Timetable.App"
+        xmlns:controls="clr-namespace:Timetable.App.Controls"
+        xmlns:tl="clr-namespace:Timetable.Application.Timeline;assembly=Timetable.Application"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="{Binding Title}" Height="800" Width="1400"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <local:StatusToBrushConverter x:Key="StatusBrush" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <Style x:Key="CellText" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="4,0" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+
+        <DataTemplate DataType="{x:Type tl:ProjectHeaderRow}">
+            <Border Height="24" Background="#D9D9D9" BorderBrush="#ABABAB" BorderThickness="0,0,0,1">
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Projekt bearbeiten…" Click="EditProject_Click" />
+                        <MenuItem Header="Neuer Meilenstein…" Click="AddMilestone_Click" />
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="250" />
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="50" />
+                        <ColumnDefinition Width="90" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource CellText}" FontWeight="SemiBold" Text="{Binding Name}" />
+                    <TextBlock Grid.Column="2" Style="{StaticResource CellText}" FontWeight="SemiBold" Text="{Binding Lead}" />
+                    <TextBlock Grid.Column="3" Style="{StaticResource CellText}" FontWeight="SemiBold" Text="{Binding Participants}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type tl:MilestoneRow}">
+            <Border Height="24" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Background="White">
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Meilenstein bearbeiten…" Click="EditMilestone_Click" />
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="250" />
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="50" />
+                        <ColumnDefinition Width="90" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <DockPanel>
+                        <Rectangle DockPanel.Dock="Left" Width="4" Margin="3,4,0,4" RadiusX="1" RadiusY="1"
+                                   Fill="{Binding Status, Converter={StaticResource StatusBrush}}" />
+                        <TextBlock Style="{StaticResource CellText}" Text="{Binding Title}" />
+                    </DockPanel>
+                    <TextBlock Grid.Column="1" Style="{StaticResource CellText}" Text="{Binding DateText}" />
+                    <TextBlock Grid.Column="2" Style="{StaticResource CellText}" Text="{Binding Lead}" />
+                    <TextBlock Grid.Column="3" Style="{StaticResource CellText}" Text="{Binding Participants}" />
+                    <TextBlock Grid.Column="4" Style="{StaticResource CellText}" Foreground="#666666" Text="{Binding Note}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+        <!-- Zeilen der Wochenansicht: Spalten Inhalte (250) | Zeitraum (110) | Lead (60) | Personen (*) -->
+        <DataTemplate DataType="{x:Type tl:WeekProjectRow}">
+            <Border Height="24" Background="#D9D9D9" BorderBrush="#ABABAB" BorderThickness="0,0,0,1">
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Projekt bearbeiten…" Click="EditProject_Click" />
+                        <MenuItem Header="Neuer Meilenstein…" Click="AddMilestone_Click" />
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <TextBlock Style="{StaticResource CellText}" FontWeight="SemiBold" Text="{Binding Name}" />
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type tl:WeekMilestoneRow}">
+            <Border Height="24" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Background="White">
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Neue Aufgabe…" Click="AddTask_Click" />
+                        <MenuItem Header="Meilenstein bearbeiten…" Click="EditMilestone_Click" />
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="250" />
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="60" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <DockPanel>
+                        <Rectangle DockPanel.Dock="Left" Width="4" Margin="3,4,0,4" RadiusX="1" RadiusY="1"
+                                   Fill="{Binding Status, Converter={StaticResource StatusBrush}}" />
+                        <TextBlock Style="{StaticResource CellText}" FontWeight="SemiBold" Text="{Binding Title}" />
+                    </DockPanel>
+                    <TextBlock Grid.Column="1" Style="{StaticResource CellText}" Text="{Binding DateText}" />
+                    <TextBlock Grid.Column="2" Style="{StaticResource CellText}" Text="{Binding Lead}" />
+                    <TextBlock Grid.Column="3" Style="{StaticResource CellText}" Text="{Binding Participants}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type tl:WeekTaskRow}">
+            <Border Height="24" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Background="White">
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Aufgabe bearbeiten…" Click="EditTask_Click" />
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="250" />
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="60" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <DockPanel Margin="16,0,0,0">
+                        <Rectangle DockPanel.Dock="Left" Width="4" Margin="3,4,0,4" RadiusX="1" RadiusY="1"
+                                   Fill="{Binding Status, Converter={StaticResource StatusBrush}}" />
+                        <TextBlock Style="{StaticResource CellText}" Text="{Binding Title}" />
+                    </DockPanel>
+                    <TextBlock Grid.Column="1" Style="{StaticResource CellText}" Text="{Binding DateText}" />
+                    <TextBlock Grid.Column="3" Style="{StaticResource CellText}" Text="{Binding Assignees}" />
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <DockPanel>
+        <!-- Werkzeugleiste -->
+        <Border DockPanel.Dock="Top" Background="#F5F5F5" BorderBrush="#ABABAB" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Margin="6,4">
+                <StackPanel.Resources>
+                    <Style TargetType="Button">
+                        <Setter Property="Padding" Value="10,4" />
+                        <Setter Property="Margin" Value="0,0,6,0" />
+                    </Style>
+                </StackPanel.Resources>
+                <Button Content="Neu" Command="{Binding NewPlanCommand}" />
+                <Button Content="Öffnen…" Command="{Binding OpenPlanCommand}" />
+                <Button Content="Speichern" Command="{Binding SavePlanCommand}" />
+                <Button Content="Speichern unter…" Command="{Binding SavePlanAsCommand}" />
+                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="4,2" />
+                <Button Content="Neues Projekt…" Command="{Binding AddProjectCommand}" />
+                <Button Content="Personen…" Command="{Binding EditPeopleCommand}" />
+                <Button Content="Ferien &amp; Events…" Command="{Binding EditCalendarCommand}" />
+                <Button Content="Plandaten…" Command="{Binding EditPlanInfoCommand}" />
+                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="4,2" />
+                <ToggleButton Content="Wochenansicht" IsChecked="{Binding IsWeekView}" Padding="10,4" Margin="0,0,6,0" />
+                <StackPanel Orientation="Horizontal"
+                            Visibility="{Binding IsWeekView, Converter={StaticResource BoolToVis}}">
+                    <Button Content="◀" Command="{Binding PreviousWeekCommand}" />
+                    <Button Content="Heute" Command="{Binding GoToCurrentWeekCommand}" />
+                    <Button Content="▶" Command="{Binding NextWeekCommand}" />
+                    <TextBlock Text="{Binding WeekTitle}" VerticalAlignment="Center"
+                               FontWeight="SemiBold" Margin="6,0,0,0" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Statusleiste -->
+        <Border DockPanel.Dock="Bottom" Background="#F5F5F5" BorderBrush="#ABABAB" BorderThickness="0,1,0,0">
+            <DockPanel Margin="8,3">
+                <TextBlock DockPanel.Dock="Right" Text="{Binding PresenceText}"
+                           Foreground="#B25000" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding StatusText}" Foreground="#666666" />
+            </DockPanel>
+        </Border>
+
     <Grid>
 
+    <!-- Jahresansicht -->
+    <Grid>
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsWeekView}" Value="True">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="76" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="640" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Kopf links: Spaltenüberschriften der Tabelle -->
+        <Border Background="#F5F5F5" BorderBrush="#ABABAB" BorderThickness="0,0,1,1">
+            <Grid VerticalAlignment="Bottom" Height="24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="50" />
+                    <ColumnDefinition Width="90" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource CellText}" FontWeight="SemiBold" Text="Inhalte" />
+                <TextBlock Grid.Column="1" Style="{StaticResource CellText}" FontWeight="SemiBold" Text="Datum" />
+                <TextBlock Grid.Column="2" Style="{StaticResource CellText}" FontWeight="SemiBold" Text="Lead" />
+                <TextBlock Grid.Column="3" Style="{StaticResource CellText}" FontWeight="SemiBold" Text="mit wem" />
+                <TextBlock Grid.Column="4" Style="{StaticResource CellText}" FontWeight="SemiBold" Text="Anmerkung" />
+            </Grid>
+        </Border>
+
+        <!-- Kopf rechts: Monate, KW, Ferien, Events -->
+        <ScrollViewer x:Name="HeaderScroll" Grid.Column="1"
+                      HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+            <controls:TimelineHeaderControl Model="{Binding Timeline}" />
+        </ScrollViewer>
+
+        <!-- Inhalt links: Tabellenzeilen -->
+        <ScrollViewer x:Name="LeftScroll" Grid.Row="1"
+                      VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled"
+                      MouseDoubleClick="LeftRows_MouseDoubleClick">
+            <Border BorderBrush="#ABABAB" BorderThickness="0,0,1,0">
+                <ItemsControl ItemsSource="{Binding Timeline.Rows}" />
+            </Border>
+        </ScrollViewer>
+
+        <!-- Inhalt rechts: Zeitachse -->
+        <ScrollViewer x:Name="MainScroll" Grid.Row="1" Grid.Column="1"
+                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                      ScrollChanged="MainScroll_ScrollChanged">
+            <controls:TimelineRowsControl x:Name="RowsControl" Model="{Binding Timeline}"
+                                          MouseLeftButtonDown="TimelineRows_MouseLeftButtonDown" />
+        </ScrollViewer>
     </Grid>
+
+    <!-- Wochenansicht -->
+    <Grid Visibility="{Binding IsWeekView, Converter={StaticResource BoolToVis}}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="76" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="640" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Kopf links: Spaltenüberschriften der Tabelle -->
+        <Border Background="#F5F5F5" BorderBrush="#ABABAB" BorderThickness="0,0,1,1">
+            <Grid VerticalAlignment="Bottom" Height="24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="250" />
+                    <ColumnDefinition Width="110" />
+                    <ColumnDefinition Width="60" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource CellText}" FontWeight="SemiBold" Text="Inhalte" />
+                <TextBlock Grid.Column="1" Style="{StaticResource CellText}" FontWeight="SemiBold" Text="Zeitraum" />
+                <TextBlock Grid.Column="2" Style="{StaticResource CellText}" FontWeight="SemiBold" Text="Lead" />
+                <TextBlock Grid.Column="3" Style="{StaticResource CellText}" FontWeight="SemiBold" Text="Personen" />
+            </Grid>
+        </Border>
+
+        <!-- Kopf rechts: Tage, Ferien, Events -->
+        <ScrollViewer x:Name="WeekHeaderScroll" Grid.Column="1"
+                      HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+            <controls:WeekHeaderControl Model="{Binding Week}" />
+        </ScrollViewer>
+
+        <!-- Inhalt links: Tabellenzeilen -->
+        <ScrollViewer x:Name="WeekLeftScroll" Grid.Row="1"
+                      VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled"
+                      MouseDoubleClick="LeftRows_MouseDoubleClick">
+            <Border BorderBrush="#ABABAB" BorderThickness="0,0,1,0">
+                <ItemsControl ItemsSource="{Binding Week.Rows}" />
+            </Border>
+        </ScrollViewer>
+
+        <!-- Inhalt rechts: Tagesraster -->
+        <ScrollViewer x:Name="WeekMainScroll" Grid.Row="1" Grid.Column="1"
+                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                      ScrollChanged="WeekMainScroll_ScrollChanged">
+            <controls:WeekRowsControl x:Name="WeekRows" Model="{Binding Week}"
+                                      MouseLeftButtonDown="WeekRows_MouseLeftButtonDown" />
+        </ScrollViewer>
+    </Grid>
+
+    </Grid>
+    </DockPanel>
 </Window>

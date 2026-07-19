@@ -1,0 +1,106 @@
+<Window x:Class="Timetable.App.MilestoneDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding WindowTitle}"
+        Width="460" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.Resources>
+            <Style TargetType="TextBlock" x:Key="Label">
+                <Setter Property="Margin" Value="0,10,0,3" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+        </Grid.Resources>
+
+        <StackPanel>
+            <TextBlock Text="Titel" Style="{StaticResource Label}" Margin="0,0,0,3" />
+            <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="Status" Style="{StaticResource Label}" />
+            <ComboBox ItemsSource="{Binding StatusChoices}" DisplayMemberPath="Label"
+                      SelectedItem="{Binding SelectedStatus}" Width="160" HorizontalAlignment="Left" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="2">
+            <TextBlock Text="Termin" Style="{StaticResource Label}" />
+            <Border BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="3" Padding="10,8">
+                <StackPanel>
+                    <RadioButton GroupName="Precision" Content="Tagesgenau"
+                                 IsChecked="{Binding IsDayPrecision}" />
+                    <DatePicker SelectedDate="{Binding DayDate}" IsEnabled="{Binding IsDayPrecision}"
+                                Width="140" HorizontalAlignment="Left" Margin="20,4,0,10" />
+
+                    <RadioButton GroupName="Precision" Content="Nur Kalenderwoche bekannt"
+                                 IsChecked="{Binding IsWeekPrecision}" />
+                    <StackPanel Orientation="Horizontal" IsEnabled="{Binding IsWeekPrecision}"
+                                Margin="20,4,0,10">
+                        <TextBlock Text="KW" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBox Text="{Binding WeekNumberText, UpdateSourceTrigger=PropertyChanged}" Width="40" />
+                        <TextBlock Text="/" VerticalAlignment="Center" Margin="6,0" />
+                        <TextBox Text="{Binding WeekYearText, UpdateSourceTrigger=PropertyChanged}" Width="60" />
+                    </StackPanel>
+
+                    <RadioButton GroupName="Precision" Content="Nur Monat bekannt (xx.MM.JJJJ)"
+                                 IsChecked="{Binding IsMonthPrecision}" />
+                    <StackPanel Orientation="Horizontal" IsEnabled="{Binding IsMonthPrecision}"
+                                Margin="20,4,0,2">
+                        <ComboBox ItemsSource="{Binding Months}" SelectedIndex="{Binding SelectedMonthIndex}"
+                                  Width="120" />
+                        <TextBox Text="{Binding MonthYearText, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="60" Margin="8,0,0,0" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Row="3">
+            <TextBlock Text="Lead" Style="{StaticResource Label}" />
+            <ComboBox ItemsSource="{Binding LeadChoices}" DisplayMemberPath="Label"
+                      SelectedItem="{Binding SelectedLead}" Width="220" HorizontalAlignment="Left" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="4">
+            <TextBlock Text="Beteiligte (mit wem)" Style="{StaticResource Label}" />
+            <ItemsControl ItemsSource="{Binding Participants}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding Person.ShortCode}"
+                                  ToolTip="{Binding Person.DisplayName}" Margin="0,2,12,2" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+
+        <StackPanel Grid.Row="5">
+            <TextBlock Text="Anmerkung" Style="{StaticResource Label}" />
+            <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}"
+                     AcceptsReturn="True" TextWrapping="Wrap" Height="56"
+                     VerticalScrollBarVisibility="Auto" />
+        </StackPanel>
+
+        <DockPanel Grid.Row="6" Margin="0,16,0,0">
+            <Button x:Name="DeleteButton" Content="Löschen" Padding="12,5"
+                    Foreground="#B22222" Click="Delete_Click" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="OK" IsDefault="True" Padding="16,5" Margin="0,0,8,0" Click="Save_Click" />
+                <Button Content="Abbrechen" IsCancel="True" Padding="12,5" />
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>
