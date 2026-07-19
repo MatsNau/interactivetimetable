@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Timetable.App/Timetable.App.csproj" />
+    <Project Path="src/Timetable.Application/Timetable.Application.csproj" />
+    <Project Path="src/Timetable.Domain/Timetable.Domain.csproj" />
+    <Project Path="src/Timetable.Infrastructure/Timetable.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Timetable.Application.Tests/Timetable.Application.Tests.csproj" />
+    <Project Path="tests/Timetable.Domain.Tests/Timetable.Domain.Tests.csproj" />
+    <Project Path="tests/Timetable.Infrastructure.Tests/Timetable.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>
